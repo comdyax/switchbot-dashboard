@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - "${POSTGRES_BIND_IP}:5432:5432"
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -31,6 +31,3 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-volumes:
-  postgres_data:
