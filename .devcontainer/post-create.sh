@@ -15,4 +15,4 @@ echo "Setting Claude config permissions..."
 sudo chown -R vscode:vscode /home/vscode/.claude
 ln -sf /home/vscode/.claude/.claude.json /home/vscode/.claude.json
 
-echo "Feldblick dev environment ready."
+echo "dev environment ready."
