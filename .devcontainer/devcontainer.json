@@ -1,0 +1,43 @@
+{
+    "name": "Switchbot Dashboard",
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
+    "features": {
+        "ghcr.io/devcontainers/features/node:2.0.0": {
+            "version": "22"
+        }
+    },
+    "forwardPorts": [
+        8888,
+        8000
+    ],
+    "portsAttributes": {
+        "8888": {
+            "label": "Jupyter",
+            "onAutoForward": "openBrowser"
+        },
+        "8000": {
+            "label": "FastAPI",
+            "onAutoForward": "notify"
+        }
+    },
+    "mounts": [
+        "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+    ],
+    "postCreateCommand": "bash .devcontainer/post-create.sh",
+    "containerEnv": {
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-toolsai.jupyter",
+                "charliermarsh.ruff",
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint"
+            ]
+        }
+    },
+    "remoteUser": "vscode"
+}
