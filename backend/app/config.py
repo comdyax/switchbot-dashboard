@@ -1,4 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Annotated
+
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -7,8 +10,15 @@ class Settings(BaseSettings):
     # Same value the scanner uses, e.g. postgresql://user:pass@host:5432/db
     DATABASE_URL: str
 
-    # Allowed origins for the React frontend (comma-separated in .env)
-    CORS_ORIGINS: list[str] = ["http://localhost:5173"]
+    # Allowed origins for the React frontend (comma-separated in .env).
+    CORS_ORIGINS: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def split_cors_origins(cls, value: object) -> object:
+        if isinstance(value, str):
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
 
     @property
     def async_database_url(self) -> str:
