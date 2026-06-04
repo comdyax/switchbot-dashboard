@@ -1,0 +1,48 @@
+:root {
+  /* Surfaces */
+  --bg: #1b1c1f;
+  --surface: #242529;
+  --surface-2: #2c2d32;
+  --border: #34363c;
+
+  /* Text */
+  --text: #e7e8ea;
+  --text-dim: #9a9ca3;
+  --text-faint: #6c6e76;
+
+  /* Accent / status */
+  --accent: #3ddc84;
+
+  /* Per-room series colors (shared by cards + charts) */
+  --room-1: #5b9dff;
+  --room-2: #a98bff;
+  --room-3: #ff7a59;
+  --room-4: #3ddc84;
+
+  --radius: 12px;
+  --gap: 16px;
+
+  font: 15px/1.45 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}

@@ -1,0 +1,266 @@
+.app {
+  /* App shell: pin the whole UI to the viewport height, then split it into a
+     fixed-size header row and a flexible main row that absorbs everything left.
+     This is what turns a scrolling "document" into a fit-to-screen "app". */
+  height: 100dvh; /* dvh accounts for mobile browser chrome; 100vh would overflow */
+  display: grid;
+  grid-template-rows: auto 1fr; /* header → its content size; main → the rest */
+  gap: var(--gap);
+  margin: 0 auto;
+  padding: 20px 24px;
+  overflow: hidden; /* desktop: the page itself never scrolls; tiles fit inside */
+}
+
+/* The dashboard surface inside <main>: a grid of tiles. Each tile is placed in
+   a named area (see DashboardView's <Tile area="…">). Rearranging the layout is
+   a one-line edit to grid-template-areas here. */
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr 1fr; /* cards row sizes to content; the two chart rows split the rest equally */
+  grid-template-areas:
+    "cards"
+    "temp"
+    "humid";
+  gap: var(--gap);
+  min-height: 0; /* see the tile note below */
+}
+
+/* A tile is one grid cell. It gets its grid-area inline (set by the Tile
+   component from its `area` prop) and makes its content fill the cell. */
+.tile {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* THE key trick for fit-to-screen: a grid/flex child defaults to min-height:auto,
+   so it refuses to shrink below its content and pushes the layout past the
+   viewport. min-height:0 lets the tile content shrink to fit its cell; flex:1
+   makes it grow to fill it. */
+.tile > * {
+  flex: 1;
+  min-height: 0;
+  margin-top: 0; /* tiles are placed by the grid, not by document-flow margins */
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header h1 {
+  font-size: 18px;
+  letter-spacing: 0.2px;
+}
+
+.muted {
+  color: var(--text-dim);
+}
+
+/* Status pill */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.status--error {
+  color: #ff7a59;
+}
+
+.status--error .status__dot {
+  background: #ff7a59;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #ff7a59 25%, transparent);
+}
+
+/* Sections */
+.section {
+  margin-top: 4px;
+}
+
+.section__title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 12px;
+}
+
+/* Card base */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+/* Reading cards */
+.readings-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+@media (max-width: 720px) {
+  .readings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.reading-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.reading-card__temp {
+  font-size: 34px;
+  font-weight: 600;
+  margin-top: 12px;
+  line-height: 1;
+}
+
+.reading-card__temp .deg {
+  color: var(--text-dim);
+}
+
+.reading-card__humidity {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.reading-card__foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.reading-card__empty {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+/* Chart cards */
+.chart-card {
+  /* Stack head → legend → body vertically so the body can flex to fill the tile. */
+  display: flex;
+  flex-direction: column;
+  max-height: 520px; /* cap on large screens so charts don't stretch absurdly tall */
+}
+
+.chart-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.chart-card__head h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.chart-card__body {
+  flex: 1; /* eat the remaining tile height after the head + legend */
+  min-height: 0; /* let the chart shrink within the flex column instead of overflowing */
+}
+
+/* Custom interactive legend (click to isolate a line) */
+.chart-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.chart-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.chart-legend button .dot {
+  border-radius: 50%;
+}
+
+.chart-legend button:hover {
+  color: var(--text);
+}
+
+.chart-legend button.is-dimmed {
+  opacity: 0.4;
+}
+
+/* Chart controls (range + interval toggles, side by side) */
+.chart-card__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Segmented toggle — used for both range and interval */
+.toggle {
+  display: inline-flex;
+  gap: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.toggle button {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.toggle button:hover {
+  color: var(--text);
+}
+
+.toggle button.is-active {
+  background: var(--surface);
+  color: var(--text);
+}
