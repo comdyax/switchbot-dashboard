@@ -264,3 +264,39 @@
   background: var(--surface);
   color: var(--text);
 }
+
+/* Scroll mode: on narrow screens or short viewports, the fit-to-screen layout
+   crams the cards and charts into too little space. Instead, let the page
+   grow past the viewport and scroll vertically like a normal document.
+
+   We undo the three things that make the app fit-to-screen:
+     - .app's fixed height + overflow:hidden  → min-height + scroll
+     - .dashboard's equal-split chart rows     → rows size to their content
+     - .tile > *'s flex:1 (fill the cell)      → content keeps its natural size
+   and give the charts an explicit height since they can no longer flex to fill. */
+@media (max-width: 720px), (max-height: 600px) {
+  .app {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible; /* allow the page to scroll instead of clipping */
+  }
+
+  .dashboard {
+    grid-template-rows: auto auto auto; /* each row sizes to its content */
+  }
+
+  .tile,
+  .tile > * {
+    min-height: 0;
+    flex: none; /* stop stretching tile content to fill the (now unbounded) cell */
+  }
+
+  .chart-card {
+    max-height: none; /* drop the desktop cap; height is driven by the body below */
+  }
+
+  .chart-card__body {
+    flex: none;
+    height: 260px; /* charts need an explicit height once they no longer flex */
+  }
+}
