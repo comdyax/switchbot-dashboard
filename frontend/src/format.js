@@ -22,6 +22,25 @@ export function formatBucket(iso, interval) {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
+/** UTC ISO string → value for an <input type="date">, i.e. local "YYYY-MM-DD". */
+export function isoToDateInput(iso) {
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** <input type="date"> value → UTC ISO at the START of that local day (00:00). */
+export function dateInputToIsoStart(value) {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
+}
+
+/** <input type="date"> value → UTC ISO at the END of that local day (23:59:59.999). */
+export function dateInputToIsoEnd(value) {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
+}
+
 /** Coarse relative time like "just now" / "3 min ago" / "2 h ago". */
 export function relativeTime(date) {
   if (!date) return "";

@@ -1,6 +1,7 @@
 import Tile from "./Tile";
 import SwitchbotReadingsGrid from "./SwitchbotReadingsGrid";
-import TimeChart from "./TimeChart";
+import SensorTimeChart from "./SensorTimeChart";
+import ChartControls from "./ChartControls";
 
 const DashboardView = () => {
   return (
@@ -9,8 +10,12 @@ const DashboardView = () => {
         <SwitchbotReadingsGrid />
       </Tile>
 
+      <Tile area="controls">
+        <ChartControls />
+      </Tile>
+
       <Tile area="temp">
-        <TimeChart
+        <SensorTimeChart
           title="Temperature over time"
           field="temperature_avg"
           unit="°"
@@ -18,7 +23,11 @@ const DashboardView = () => {
       </Tile>
 
       <Tile area="humid">
-        <TimeChart title="Humidity over time" field="humidity_avg" unit="%" />
+        <SensorTimeChart
+          title="Humidity over time"
+          field="humidity_avg"
+          unit="%"
+        />
       </Tile>
     </main>
   );

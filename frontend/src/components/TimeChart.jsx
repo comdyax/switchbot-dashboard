@@ -10,16 +10,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { RANGES, INTERVALS } from "../api";
-import { colorsByName } from "../rooms";
 import { formatBucket } from "../format";
 import Toggle from "./Toggle";
-import { useSensors } from "../context/SensorsContext";
-import { useHistory } from "../context/HistoryContext";
 
 /**
- * Merge per-device history responses into chart-ready rows keyed by bucket,
- * with one column per device name holding the requested field's value.
+ * Merge per-series history responses into chart-ready rows keyed by bucket,
+ * with one column per series name holding the requested field's value.
  *
  * @param {Array<{name: string, points: Array<object>}>} series
  * @param {string} field e.g. "temperature_avg" or "humidity_avg"
@@ -45,26 +41,42 @@ const CHART_TYPES = {
   bar: { label: "Bar" },
 };
 
+const ANIMATION = {
+  isAnimationActive: true,
+  animationDuration: 700,
+  animationEasing: "ease-out",
+};
+
 /**
- * A reusable multi-series chart (line or bar) wired to the shared history store.
+ * Presentational multi-series time chart (line or bar).
  *
  * @param {{
  *   title: string,
- *   field: string,    // e.g. "temperature_avg" | "humidity_avg"
- *   unit: string,     // e.g. "°" | "%"
+ *   field: string,                       // which point field to plot, e.g. "temperature_avg"
+ *   unit: string,                        // axis/tooltip suffix, e.g. "°" | "%"
+ *   series: Array<{name: string, points: Array<{bucket: string, [field: string]: number}>}>,
+ *   names: Array<string>,                // series names, in legend/draw order
+ *   colors: Record<string, string>,      // name -> color
+ *   interval: string,                    // bucket size, drives x-axis formatting
+ *   loading?: boolean,
+ *   error?: unknown,
  * }} props
  */
-const TimeChart = ({ title, field, unit }) => {
-  const { sensors } = useSensors();
-  const { range, setRange, interval, setInterval, series, loading, error } =
-    useHistory();
-
-  const [isolated, setIsolated] = useState(null);
+const TimeChart = ({
+  title,
+  field,
+  unit,
+  series,
+  names,
+  colors,
+  interval,
+  loading = false,
+  error = null,
+}) => {
+  const [hidden, setHidden] = useState(() => new Set());
   const [chartType, setChartType] = useState("line");
 
-  const colors = colorsByName(sensors);
   const data = mergeSeries(series, field);
-  const names = sensors.map((s) => s.name);
 
   // Recharts uses a different container per chart type; the axes/grid/tooltip
   // children are identical, so we only swap the container + series component.
@@ -74,16 +86,21 @@ const TimeChart = ({ title, field, unit }) => {
   // turn the line into a blob.
   const showDots = data.length <= 60;
 
-  const toggleIsolate = (name) =>
-    setIsolated((current) => (current === name ? null : name));
+  // Toggle a single series on/off, so any subset stays visible for comparison
+  // (Plotly-style). Unlike isolating, this lets you keep e.g. two rooms shown.
+  const toggleSeries = (name) =>
+    setHidden((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
 
   return (
     <section className="card chart-card">
       <div className="chart-card__head">
         <h3>{title}</h3>
         <div className="chart-card__controls">
-          <Toggle options={RANGES} value={range} onChange={setRange} />
-          <Toggle options={INTERVALS} value={interval} onChange={setInterval} />
           <Toggle
             options={CHART_TYPES}
             value={chartType}
@@ -95,13 +112,13 @@ const TimeChart = ({ title, field, unit }) => {
       {!error && data.length > 0 && (
         <ul className="chart-legend">
           {names.map((name) => {
-            const dimmed = isolated !== null && isolated !== name;
+            const dimmed = hidden.has(name);
             return (
               <li key={name}>
                 <button
                   type="button"
                   className={dimmed ? "is-dimmed" : ""}
-                  onClick={() => toggleIsolate(name)}
+                  onClick={() => toggleSeries(name)}
                 >
                   <span className="dot" style={{ background: colors[name] }} />
                   {name}
@@ -161,8 +178,8 @@ const TimeChart = ({ title, field, unit }) => {
                     key={name}
                     dataKey={name}
                     fill={colors[name]}
-                    isAnimationActive={false}
-                    hide={isolated !== null && isolated !== name}
+                    {...ANIMATION}
+                    hide={hidden.has(name)}
                   />
                 ) : (
                   <Line
@@ -174,8 +191,8 @@ const TimeChart = ({ title, field, unit }) => {
                     dot={showDots ? { r: 2 } : false}
                     activeDot={{ r: 4 }}
                     connectNulls
-                    isAnimationActive={false}
-                    hide={isolated !== null && isolated !== name}
+                    {...ANIMATION}
+                    hide={hidden.has(name)}
                   />
                 ),
               )}

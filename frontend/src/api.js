@@ -16,14 +16,6 @@ export function getSensors() {
   return fetchJson("/api/sensors");
 }
 
-export const RANGES = {
-  "24h": { label: "24h", hours: 24 },
-  "7d": { label: "7d", hours: 24 * 7 },
-  "30d": { label: "30d", hours: 24 * 30 },
-};
-
-export const DEFAULT_RANGE = "24h";
-
 export const INTERVALS = {
   hour: { label: "Hour" },
   day: { label: "Day" },
@@ -33,19 +25,13 @@ export const INTERVALS = {
 export const DEFAULT_INTERVAL = "hour";
 
 /**
- * Time-bucketed history for a single device.
+ * Time-bucketed history for a single device over an explicit window.
  * @param {string} mac
- * @param {keyof typeof RANGES} range
+ * @param {string} start UTC ISO timestamp (inclusive)
+ * @param {string} end UTC ISO timestamp (exclusive)
  * @param {keyof typeof INTERVALS} interval
  */
-export function getHistory(mac, range, interval) {
-  const { hours } = RANGES[range] ?? RANGES[DEFAULT_RANGE];
-  const end = new Date();
-  const start = new Date(end.getTime() - hours * 3600 * 1000);
-  const params = new URLSearchParams({
-    interval,
-    start: start.toISOString(),
-    end: end.toISOString(),
-  });
+export function getHistory(mac, start, end, interval) {
+  const params = new URLSearchParams({ interval, start, end });
   return fetchJson(`/api/sensors/${encodeURIComponent(mac)}/history?${params}`);
 }

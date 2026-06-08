@@ -2,16 +2,17 @@ import { useEffect, useState } from "react";
 import { getHistory } from "../api";
 
 /**
- * Fetch history for every sensor over the given range + interval, in parallel.
- * Re-runs only when range, interval, or the set of devices changes.
+ * Fetch history for every sensor over the given window + interval, in parallel.
+ * Re-runs only when start, end, interval, or the set of devices changes.
  *
  * @param {Array<{mac: string, name: string}>} sensors
- * @param {string} range one of the keys in RANGES
+ * @param {string} start UTC ISO timestamp
+ * @param {string} end UTC ISO timestamp
  * @param {string} interval one of the keys in INTERVALS
  * @returns {{ series: Array<{name: string, points: Array<object>}>,
  *   loading: boolean, error: Error | null }}
  */
-export function useHistories(sensors, range, interval) {
+export function useHistories(sensors, start, end, interval) {
   const [series, setSeries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,7 +29,7 @@ export function useHistories(sensors, range, interval) {
     Promise.all(
       sensors.map(async (s) => ({
         name: s.name,
-        points: (await getHistory(s.mac, range, interval)).points,
+        points: (await getHistory(s.mac, start, end, interval)).points,
       })),
     )
       .then((result) => {
@@ -43,7 +44,7 @@ export function useHistories(sensors, range, interval) {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [macsKey, range, interval]);
+  }, [macsKey, start, end, interval]);
 
   return { series, loading, error };
 }
